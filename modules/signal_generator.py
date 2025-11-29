@@ -41,6 +41,15 @@ def check_long_signal(df, symbol, timeframe):
     # 4. Volatility Check: ATR is positive
     volatility_ok = last_candle['ATRr_14'] > 0
 
+    # --- Debug Logging ---
+    if not (ema_trend_ok and price_crossed_up_ema12 and rsi_ok and volatility_ok):
+        print(f"-> No signal for {symbol}. Reason:")
+        print(f"   - EMA Trend (12 > 50): {'OK' if ema_trend_ok else 'FAIL'} (EMA12: {last_candle['EMA_12']:.2f}, EMA50: {last_candle['EMA_50']:.2f})")
+        print(f"   - EMA Crossover: {'OK' if price_crossed_up_ema12 else 'FAIL'} (Prev Close: {prev_candle['close']:.2f}, Prev EMA12: {prev_candle['EMA_12']:.2f}; Last Close: {last_candle['close']:.2f}, Last EMA12: {last_candle['EMA_12']:.2f})")
+        print(f"   - RSI (40-70): {'OK' if rsi_ok else 'FAIL'} (RSI: {last_candle['RSI_14']:.2f})")
+        print(f"   - Volatility (ATR > 0): {'OK' if volatility_ok else 'FAIL'} (ATR: {last_candle['ATRr_14']:.4f})")
+
+
     # --- Signal Generation ---
     if ema_trend_ok and price_crossed_up_ema12 and rsi_ok and volatility_ok:
         entry_price = last_candle['close']

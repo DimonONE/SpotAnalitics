@@ -65,7 +65,8 @@ def run_analysis_cycle(exchange, bot):
                 msg = format_signal_message(forecast)
                 asyncio.run(send_message(bot, BOT_USER_ID, msg))
         else:
-            print(f"-> No signal for {symbol} on this cycle.")
+            # The signal_generator now prints the detailed reason.
+            pass
     
     print("Analysis cycle finished.")
 
