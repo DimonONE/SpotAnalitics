@@ -1,17 +1,18 @@
 import schedule
 import time
 import asyncio
-from config import EXCHANGE_ID, TOP_N_COINS_BY_VOLUME, DEFAULT_TIMEFRAME
+import threading
+from config import EXCHANGE_ID, TOP_N_COINS_BY_VOLUME, DEFAULT_TIMEFRAME, BOT_USER_ID
 from modules.data_fetcher import get_exchange, fetch_ohlcv, get_top_volume_symbols
 from modules.indicator_calculator import add_indicators
 from modules.signal_generator import check_long_signal
 from modules.position_tracker import check_open_positions
 from modules.database import get_open_forecast, add_open_forecast
-from modules.telegram_bot import setup_bot, send_message, format_signal_message, format_closure_message, BOT_USER_ID
+from modules.telegram_bot import setup_bot, send_message, format_signal_message, format_closure_message
 
 # --- Main Application Logic ---
 
-def run_analysis_cycle(exchange, bot):
+async def run_analysis_cycle(exchange, bot):
     """
     The main job that runs on schedule. It checks for closed positions
     and scans for new signals.
@@ -25,7 +26,8 @@ def run_analysis_cycle(exchange, bot):
         for closed in closed_positions:
             msg = format_closure_message(closed)
             # We need to run the async send_message in the bot's event loop
-            asyncio.run(send_message(bot, BOT_USER_ID, msg))
+            await send_message(bot, BOT_USER_ID, msg)  
+
 
     # 2. Get the list of top coins to scan
     print(f"Fetching top {TOP_N_COINS_BY_VOLUME} coins by volume...")
@@ -63,7 +65,9 @@ def run_analysis_cycle(exchange, bot):
             if BOT_USER_ID:
                 print("-> Sending signal to user...")
                 msg = format_signal_message(forecast)
-                asyncio.run(send_message(bot, BOT_USER_ID, msg))
+                await send_message(bot, BOT_USER_ID, msg)  # <-- заменили asyncio.run()
+
+                
         else:
             # The signal_generator now prints the detailed reason.
             pass
@@ -72,46 +76,45 @@ def run_analysis_cycle(exchange, bot):
 
 
 async def main():
-    """
-    Main function to initialize and run the bot and the scheduler.
-    """
-    # --- Initialization ---
-    print("Initializing Trading Analysis Bot...")
-    
-    # Setup Telegram Bot
+
+    # Setup bot
     application = setup_bot()
     if not application:
-        return # Exit if bot setup failed (e.g., no token)
+        return
     bot = application.bot
 
-    # Initialize Exchange
+    # Init exchange
     exchange = get_exchange(EXCHANGE_ID)
     if not exchange:
-        print("Could not initialize exchange. Exiting.")
+        print("Exchange init error")
         return
 
     print("Initialization complete.")
-    
-    # --- Scheduling ---
-    # Schedule the job. 
-    # For a 1h timeframe, we run it at the beginning of every hour.
-    schedule.every().hour.at(":01").do(run_analysis_cycle, exchange=exchange, bot=bot)
-    print(f"Scheduled analysis to run every hour at XX:01.")
-    
-    # --- Run Initial Cycle ---
-    # Run one cycle immediately on startup.
-    run_analysis_cycle(exchange, bot)
 
-    # --- Start Bot and Scheduler ---
-    print("Starting bot polling...")
-    # Run the bot polling in a separate task
-    async with application:
-        await application.start()
-        
-        # Keep the scheduler running
-        while True:
-            schedule.run_pending()
-            await asyncio.sleep(1)
+    # Schedule analysis
+    schedule.every().hour.at(":01").do(
+        lambda: asyncio.run_coroutine_threadsafe(
+            run_analysis_cycle(exchange, bot),
+            asyncio.get_event_loop()
+        )
+    )
+
+    # Run first analysis
+    asyncio.create_task(run_analysis_cycle(exchange, bot))
+
+    # --- Run telegram bot IN A SEPARATE THREAD ---
+    def run_telegram():
+        application.run_polling()
+
+    tg_thread = threading.Thread(target=run_telegram, daemon=True)
+    tg_thread.start()
+
+    print("Bot polling started in background thread.")
+
+    # --- Scheduler loop ---
+    while True:
+        schedule.run_pending()
+        await asyncio.sleep(1)
 
 if __name__ == "__main__":
     try:

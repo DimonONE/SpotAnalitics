@@ -79,10 +79,12 @@ def get_top_volume_symbols(exchange, n=20):
             reverse=True
         )
         
-        # Get the top N symbols
-        top_symbols = [ticker['symbol'] for ticker in sorted_tickers[:n]]
+        # # Get the top N symbols
+        # top_symbols = [ticker['symbol'] for ticker in sorted_tickers[:n]]
         
-        return top_symbols
+        # return top_symbols
+
+        return [t["symbol"] for t in sorted_tickers]
 
     except ccxt.NetworkError as e:
         print(f"Network error while fetching tickers: {e}")

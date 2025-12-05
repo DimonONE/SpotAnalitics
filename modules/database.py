@@ -72,6 +72,28 @@ def close_forecast(symbol, outcome_data):
         return forecast_to_close
     return None
 
+
+def get_all_forecasts():
+    """
+    Возвращает все прогнозы из базы (history) с преобразованием дат.
+    """
+    db = load_db()
+    forecasts = db.get('history', [])
+
+    for f in forecasts:
+        if "created_at" in f and isinstance(f["created_at"], str):
+            try:
+                f["created_at"] = datetime.fromisoformat(f["created_at"])
+            except Exception:
+                pass
+        if "hit_at" in f and isinstance(f["hit_at"], str):
+            try:
+                f["hit_at"] = datetime.fromisoformat(f["hit_at"])
+            except Exception:
+                pass
+
+    return forecasts
+
 def get_all_open_forecasts():
     """Returns a dictionary of all open forecasts."""
     db = load_db()
