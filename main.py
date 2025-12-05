@@ -112,9 +112,9 @@ async def main():
     print("Bot polling started in background thread.")
 
     # # --- Scheduler loop ---
-    # while True:
-    #     schedule.run_pending()
-    #     await asyncio.sleep(1)
+    while True:
+        schedule.run_pending()
+        await asyncio.sleep(1)
 
 if __name__ == "__main__":
     try:
