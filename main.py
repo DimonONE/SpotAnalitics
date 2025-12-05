@@ -100,7 +100,7 @@ async def main():
     )
 
     # Run first analysis
-    asyncio.create_task(run_analysis_cycle(exchange, bot))
+    # asyncio.create_task(run_analysis_cycle(exchange, bot))
 
     # --- Run telegram bot IN A SEPARATE THREAD ---
     def run_telegram():
@@ -111,10 +111,10 @@ async def main():
 
     print("Bot polling started in background thread.")
 
-    # --- Scheduler loop ---
-    while True:
-        schedule.run_pending()
-        await asyncio.sleep(1)
+    # # --- Scheduler loop ---
+    # while True:
+    #     schedule.run_pending()
+    #     await asyncio.sleep(1)
 
 if __name__ == "__main__":
     try:
