@@ -1,5 +1,6 @@
-aiogram>=3.0.0
+asyncio
 ccxt
 pandas
 pandas-ta
 schedule
+aiogram>=3.0.0
