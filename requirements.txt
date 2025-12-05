@@ -1,4 +1,4 @@
-asyncio
+aiogram>=3.0.0
 ccxt
 pandas
 pandas-ta
