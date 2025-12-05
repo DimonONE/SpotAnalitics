@@ -105,9 +105,11 @@ async def cmd_get_db(message: types.Message):
     if not os.path.exists(DB_FILE_PATH):
         await message.answer("❌ Файл db.json не найден.")
         return
-    
-    file = types.InputFile(DB_FILE_PATH)
-    await message.answer_document(file, caption="📂 db.json")
+
+    # Открываем файл в бинарном режиме и передаем объект файла
+    with open(DB_FILE_PATH, "rb") as f:
+        input_file = types.InputFile(f, filename="db.json")
+        await message.answer_document(input_file, caption="📂 db.json")
 
 # --- Функция для отправки сообщений вручную ---
 async def send_message(user_id: int, message: str):
