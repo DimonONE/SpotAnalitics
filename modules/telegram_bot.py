@@ -1,5 +1,6 @@
 import os
 from aiogram import Bot, Dispatcher, types
+from aiogram.types import FSInputFile
 from aiogram.filters import Command
 from aiogram.client.bot import DefaultBotProperties
 from config import TELEGRAM_BOT_TOKEN, BOT_USER_ID, DEFAULT_BALANCE_USDT
@@ -61,17 +62,19 @@ def format_closure_message(closed_forecast):
     )
     return message
 
-# --- Команды бота ---
 @dp.message(Command("start"))
 async def cmd_start(message: types.Message):
     await message.answer(
-        "👋 **Welcome to SpotAnalitics Bot!**\n"
-        "I provide LONG trading signals.\n"
-        "**Commands:**\n"
-        "/status - open positions\n"
-        "/analytics - analytics\n"
-        "/get_db - get db.json file",
-        parse_mode="Markdown"
+        """
+👋 <b>Welcome to SpotAnalitics Bot!</b>
+<i>I provide LONG trading signals.</i>
+
+<b>📌 Commands:</b>
+• /status - view open positions
+• /analytics - view analytics
+• /get_db - download db.json file
+        """,
+        parse_mode="HTML"
     )
 
 @dp.message(Command("status"))
@@ -106,10 +109,9 @@ async def cmd_get_db(message: types.Message):
         await message.answer("❌ Файл db.json не найден.")
         return
 
-    # Открываем файл в бинарном режиме и передаем объект файла
-    with open(DB_FILE_PATH, "rb") as f:
-        input_file = types.InputFile(f, filename="db.json")
-        await message.answer_document(input_file, caption="📂 db.json")
+    # Отправка файла через FSInputFile
+    file = FSInputFile(DB_FILE_PATH, filename="db.json")
+    await message.answer_document(file, caption="📂 db.json")
 
 # --- Функция для отправки сообщений вручную ---
 async def send_message(user_id: int, message: str):
