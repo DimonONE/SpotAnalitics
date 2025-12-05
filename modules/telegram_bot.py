@@ -65,12 +65,14 @@ def format_closure_message(closed_forecast):
 @dp.message(Command("start"))
 async def cmd_start(message: types.Message):
     await message.answer(
-        "👋 **Welcome to SpotAnalitics Bot!**\n"
-        "I provide LONG trading signals.\n"
-        "**Commands:**\n"
-        "/status - open positions\n"
-        "/analytics - analytics\n"
-        "/get_db - get db.json file"
+        """👋 **Welcome to SpotAnalitics Bot!**
+
+I provide LONG trading signals.
+
+**Commands:**
+/status - open positions
+/analytics - analytics
+/get_db - get db.json file"""
     )
 
 @dp.message(Command("status"))
@@ -81,7 +83,7 @@ async def cmd_status(message: types.Message):
         return
     text = "**📊 Open Positions:**\n"
     for symbol, forecast in open_forecasts.items():
-        text += f"{symbol} - Entry: {forecast['entry_price']}, SL: {forecast['stop_loss_price']}, TP1: {forecast['take_profit1_price']}\n"
+        text += f"{symbol} - Entry: {forecast['entry_price']}, SL: {forecast['stop_loss_price']}, TP1: {forecast['take_profit1_price']}\n\n\n"
     await message.answer(text)
 
 @dp.message(Command("analytics"))
@@ -104,7 +106,9 @@ async def cmd_get_db(message: types.Message):
     if not os.path.exists(DB_FILE_PATH):
         await message.answer("❌ Файл db.json не найден.")
         return
-    await message.answer_document(open(DB_FILE_PATH, "rb"), caption="📂 db.json")
+    
+    file = types.InputFile(DB_FILE_PATH)
+    await message.answer_document(file, caption="📂 db.json")
 
 # --- Функция для отправки сообщений вручную ---
 async def send_message(user_id: int, message: str):
