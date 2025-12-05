@@ -65,14 +65,13 @@ def format_closure_message(closed_forecast):
 @dp.message(Command("start"))
 async def cmd_start(message: types.Message):
     await message.answer(
-        """👋 **Welcome to SpotAnalitics Bot!**
-
-I provide LONG trading signals.
-
-**Commands:**
-/status - open positions
-/analytics - analytics
-/get_db - get db.json file"""
+        "👋 **Welcome to SpotAnalitics Bot!**\n"
+        "I provide LONG trading signals.\n"
+        "**Commands:**\n"
+        "/status - open positions\n"
+        "/analytics - analytics\n"
+        "/get_db - get db.json file",
+        parse_mode="Markdown"
     )
 
 @dp.message(Command("status"))
